@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マルチプレイヤー Ping Pong</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #gameContainer {
+            position: relative;
+            border: 2px solid #fff;
+        }
+        
+        #gameCanvas {
+            background-color: #000;
+            display: block;
+        }
+        
+        #gameInfo {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        #score {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        #playerInfo {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        
+        #gameStatus {
+            font-size: 20px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        #restartButton {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        #restartButton:hover {
+            background-color: #45a049;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #instructions {
+            max-width: 600px;
+            text-align: center;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        
+        .waiting {
+            color: #ffff00;
+        }
+        
+        .connected {
+            color: #00ff00;
+        }
+        
+        .spectator {
+            color: #ff6600;
+        }
+    </style>
+</head>
+<body>
+    <h1>マルチプレイヤー Ping Pong</h1>
+    
+    <div id="gameInfo">
+        <div id="playerInfo">接続中...</div>
+        <div id="score">プレイヤー1: 0 - プレイヤー2: 0</div>
+        <div id="gameStatus"></div>
+        <button id="restartButton" class="hidden" onclick="restartGame()">新しいゲームを開始</button>
+    </div>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+    
+    <div id="instructions">
+        <h3>操作方法:</h3>
+        <p>
+            <strong>プレイヤー1 (左側):</strong> W/S キーまたは マウス移動<br>
+            <strong>プレイヤー2 (右側):</strong> ↑/↓ キーまたは マウス移動<br><br>
+            <strong>ゲームルール:</strong> 10点先取で勝利！<br>
+            2人のプレイヤーが接続されるとゲームが開始されます。
+        </p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const playerInfo = document.getElementById('playerInfo');
+        const scoreElement = document.getElementById('score');
+        const gameStatus = document.getElementById('gameStatus');
+        const restartButton = document.getElementById('restartButton');
+        
+        let ws;
+        let playerId = null;
+        let gameState = null;
+        let keys = {};
+        let mouseY = 300;
+        
+        // WebSocket接続
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('WebSocket接続成功');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                switch (data.type) {
+                    case 'playerAssigned':
+                        playerId = data.playerId;
+                        playerInfo.textContent = `プレイヤー${playerId}として参加中`;
+                        playerInfo.className = 'connected';
+                        break;
+                        
+                    case 'spectator':
+                        playerInfo.textContent = '観戦モード（プレイヤーが満員です）';
+                        playerInfo.className = 'spectator';
+                        break;
+                        
+                    case 'gameState':
+                        gameState = data.state;
+                        updateDisplay();
+                        break;
+                }
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket接続が切断されました');
+                playerInfo.textContent = '接続が切断されました。再接続中...';
+                playerInfo.className = 'waiting';
+                setTimeout(connectWebSocket, 2000);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket エラー:', error);
+            };
+        }
+        
+        // ゲーム画面更新
+        function updateDisplay() {
+            if (!gameState) return;
+            
+            // キャンバスをクリア
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 中央線を描画
+            ctx.strokeStyle = '#fff';
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // パドルを描画
+            ctx.fillStyle = '#fff';
+            // 左のパドル（プレイヤー1）
+            ctx.fillRect(0, gameState.paddle1.y, gameState.paddleWidth, gameState.paddleHeight);
+            // 右のパドル（プレイヤー2）
+            ctx.fillRect(canvas.width - gameState.paddleWidth, gameState.paddle2.y, gameState.paddleWidth, gameState.paddleHeight);
+            
+            // ボールを描画（ゲーム終了時は表示しない）
+            if (!gameState.gameEnded) {
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(gameState.ball.x, gameState.ball.y, gameState.ballSize, gameState.ballSize);
+            }
+            
+            // スコア更新
+            scoreElement.textContent = `プレイヤー1: ${gameState.score.player1} - プレイヤー2: ${gameState.score.player2}`;
+            
+            // ゲーム状態更新
+            if (gameState.gameEnded) {
+                gameStatus.textContent = `🎉 プレイヤー${gameState.winner}の勝利！ 🎉`;
+                gameStatus.style.color = '#ffff00';
+                restartButton.classList.remove('hidden');
+                
+                // 勝利メッセージをキャンバスに表示
+                ctx.fillStyle = '#ffff00';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`プレイヤー${gameState.winner}の勝利！`, canvas.width / 2, canvas.height / 2);
+                ctx.font = '24px Arial';
+                ctx.fillText('新しいゲームを開始してください', canvas.width / 2, canvas.height / 2 + 60);
+            } else {
+                gameStatus.textContent = '';
+                restartButton.classList.add('hidden');
+            }
+        }
+        
+        // パドル移動を送信
+        function sendPaddleMove(y) {
+            if (ws && ws.readyState === WebSocket.OPEN && playerId) {
+                ws.send(JSON.stringify({
+                    type: 'paddleMove',
+                    y: y
+                }));
+            }
+        }
+        
+        // キーボード入力処理
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        // マウス移動処理
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseY = e.clientY - rect.top;
+        });
+        
+        // 入力処理ループ
+        function handleInput() {
+            if (!playerId || !gameState || gameState.gameEnded) return;
+            
+            let newY;
+            
+            if (playerId === 1) {
+                // プレイヤー1: W/S キーまたはマウス
+                if (keys['w']) {
+                    newY = Math.max(0, gameState.paddle1.y - 8);
+                } else if (keys['s']) {
+                    newY = Math.min(gameState.gameHeight - gameState.paddleHeight, gameState.paddle1.y + 8);
+                } else {
+                    newY = Math.max(0, Math.min(gameState.gameHeight - gameState.paddleHeight, mouseY - gameState.paddleHeight / 2));
+                }
+                
+                if (newY !== gameState.paddle1.y) {
+                    sendPaddleMove(newY);
+                }
+            } else if (playerId === 2) {
+                // プレイヤー2: ↑/↓ キーまたはマウス
+                if (keys['arrowup']) {
+                    newY = Math.max(0, gameState.paddle2.y - 8);
+                } else if (keys['arrowdown']) {
+                    newY = Math.min(gameState.gameHeight - gameState.paddleHeight, gameState.paddle2.y + 8);
+                } else {
+                    newY = Math.max(0, Math.min(gameState.gameHeight - gameState.paddleHeight, mouseY - gameState.paddleHeight / 2));
+                }
+                
+                if (newY !== gameState.paddle2.y) {
+                    sendPaddleMove(newY);
+                }
+            }
+        }
+        
+        // ゲーム再開
+        function restartGame() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'restartGame'
+                }));
+            }
+        }
+        
+        // ゲームループ
+        function gameLoop() {
+            handleInput();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 初期化
+        connectWebSocket();
+        gameLoop();
+    </script>
+</body>
+</html>

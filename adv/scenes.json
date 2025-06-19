@@ -1,0 +1,119 @@
+{
+    "start": {
+        "text": "冒険の始まり。あなたは森の入り口に立っています。地面に光る石が落ちています。どうしますか？",
+        "choices": [
+            {"text": "森に入る", "next": "forest"},
+            {"text": "村に戻る", "next": "village"}
+        ],
+        "background": null,
+        "items": [
+            {"name": "光る石", "color": [100, 150, 255], "x": 100, "y": 200, "width": 60, "height": 30}
+        ]
+    },
+    "forest": {
+        "text": "深い森の中に入りました。木々が密集していて、少し不気味です。前方に小道が見えます。木の根元に赤いキノコが生えています。",
+        "choices": [
+            {"text": "小道を進む", "next": "path"},
+            {"text": "森の入り口に戻る", "next": "start"}
+        ],
+        "background": null,
+        "items": [
+            {"name": "赤キノコ", "color": [255, 100, 100], "x": 150, "y": 250, "width": 50, "height": 40}
+        ]
+    },
+    "village": {
+        "text": "村に戻ってきました。村人たちが日常の生活を送っています。井戸の近くに古いコインが落ちています。",
+        "choices": [
+            {"text": "宿屋に行く", "next": "inn"},
+            {"text": "森に向かう", "next": "start"}
+        ],
+        "background": null,
+        "items": [
+            {"name": "古いコイン", "color": [255, 255, 100], "x": 200, "y": 180, "width": 40, "height": 40}
+        ]
+    },
+    "path": {
+        "text": "小道を進むと、古い小屋が見えてきました。道端に緑の宝石が輝いています。",
+        "choices": [
+            {"text": "小屋に入る", "next": "cabin"},
+            {"text": "森に戻る", "next": "forest"}
+        ],
+        "background": null,
+        "items": [
+            {"name": "緑の宝石", "color": [100, 255, 100], "x": 300, "y": 220, "width": 45, "height": 35}
+        ]
+    },
+    "inn": {
+        "text": "宿屋に入りました。暖かい暖炉と美味しそうな食事の匂いがします。テーブルの上に銀のスプーンがあります。",
+        "choices": [
+            {"text": "食事をする", "next": "eat"},
+            {"text": "村に戻る", "next": "village"}
+        ],
+        "background": null,
+        "items": [
+            {"name": "銀スプーン", "color": [200, 200, 200], "x": 250, "y": 190, "width": 55, "height": 25}
+        ]
+    },
+    "cabin": {
+        "text": "小屋の中は埃っぽく、長い間誰も住んでいないようです。テーブルの上に古い地図があります。",
+        "choices": [
+            {"text": "地図を調べる", "next": "map"},
+            {"text": "小屋を出る", "next": "path"}
+        ],
+        "background": null,
+        "items": [
+            {"name": "古い地図", "color": [139, 69, 19], "x": 180, "y": 160, "width": 70, "height": 50}
+        ]
+    },
+    "eat": {
+        "text": "美味しい食事を取りました。体力が回復した気がします。",
+        "choices": [
+            {"text": "宿屋を出る", "next": "village"}
+        ],
+        "background": null,
+        "items": []
+    },
+    "map": {
+        "text": "地図には宝の在り処が記されているようです！冒険の新たな目標ができました。",
+        "choices": [
+            {"text": "地図を持って小屋を出る", "next": "path_with_map"}
+        ],
+        "background": null,
+        "items": []
+    },
+    "path_with_map": {
+        "text": "地図を手に入れて森の小道に戻りました。これからどこへ向かいますか？",
+        "choices": [
+            {"text": "地図に従って進む", "next": "treasure"},
+            {"text": "森に戻る", "next": "forest"}
+        ],
+        "background": null,
+        "items": []
+    },
+    "treasure": {
+        "text": "地図に従って進むと、古代の遺跡にたどり着きました。入り口には謎めいた文字が刻まれています。",
+        "choices": [
+            {"text": "遺跡に入る", "next": "ruins"},
+            {"text": "森に戻る", "next": "forest"}
+        ],
+        "background": null,
+        "items": []
+    },
+    "ruins": {
+        "text": "遺跡の中は神秘的な光に満ちています。中央には宝箱が置かれています。",
+        "choices": [
+            {"text": "宝箱を開ける", "next": "ending"},
+            {"text": "遺跡を出る", "next": "treasure"}
+        ],
+        "background": null,
+        "items": []
+    },
+    "ending": {
+        "text": "宝箱を開けると、まばゆい光が溢れ出しました。あなたは伝説の宝を手に入れました！冒険は成功です！",
+        "choices": [
+            {"text": "もう一度プレイする", "next": "start"}
+        ],
+        "background": null,
+        "items": []
+    }
+}

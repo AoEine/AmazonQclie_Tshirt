@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>不思議のダンジョン - ローグライクゲーム</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #gameContainer {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #444;
+            background-color: #000;
+        }
+        
+        #gameInfo {
+            width: 300px;
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+        
+        .stat-bar {
+            background-color: #444;
+            height: 20px;
+            margin: 5px 0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .hp-bar { background-color: #e74c3c; }
+        .exp-bar { background-color: #3498db; }
+        
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .control-info {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        #messages {
+            height: 150px;
+            overflow-y: auto;
+            background-color: #333;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .message {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        
+        .message.combat { color: #e74c3c; }
+        .message.item { color: #f39c12; }
+        .message.level { color: #2ecc71; }
+    </style>
+</head>
+<body>
+    <h1>不思議のダンジョン</h1>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="640" height="640"></canvas>
+        
+        <div id="gameInfo">
+            <h3>プレイヤー情報</h3>
+            <div>レベル: <span id="playerLevel">1</span></div>
+            <div>階層: <span id="currentFloor">1F</span></div>
+            
+            <div>HP: <span id="playerHp">100</span>/<span id="playerMaxHp">100</span></div>
+            <div class="stat-bar">
+                <div class="stat-fill hp-bar" id="hpBar" style="width: 100%"></div>
+            </div>
+            
+            <div>経験値: <span id="playerExp">0</span>/<span id="playerExpNext">100</span></div>
+            <div class="stat-bar">
+                <div class="stat-fill exp-bar" id="expBar" style="width: 0%"></div>
+            </div>
+            
+            <div>攻撃力: <span id="playerAttack">10</span></div>
+            <div>防御力: <span id="playerDefense">5</span></div>
+            
+            <h4>アイテム</h4>
+            <div id="inventory">
+                <div>所持金: <span id="playerGold">0</span>G</div>
+                <div id="itemList"></div>
+            </div>
+            
+            <div id="messages"></div>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <div class="control-info">移動: WASD または 矢印キー</div>
+        <div class="control-info">階段: Enter (階段の上で)</div>
+        <div class="control-info">アイテム拾う: Space</div>
+        <div class="control-info">待機: Z</div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
